@@ -4,7 +4,7 @@ title: 使用Fastlane快速部署
 ---
 在一般的產品開發週期中，當我們準備部署新版本時，會由iOS工程師包一個測試版本，交由QA部門進行測試與bug回報及修正。在App測試完成後，再由工程師上傳至App Store並讓PM決定何時部署。
 
-但相信大家對於Apple的Archieve都有很多**不好的回憶**。尤其是關於Certification及Build Configuration，搞到最後整個team只有某一兩個人懂得如何包版。一旦這一兩個人剛好在開會或出公差，就會導致部署流程停滯不前。PM急著發佈新版修正問題，偏偏在辦公室的人都不懂怎麼部署，大家都只能等著那個關鍵人物回來處理。
+但相信大家對於Apple的Archive都有很多**不好的回憶**。尤其是關於Certification及Build Configuration，搞到最後整個team只有某一兩個人懂得如何包版。一旦這一兩個人剛好在開會或出公差，就會導致部署流程停滯不前。PM急著發佈新版修正問題，偏偏在辦公室的人都不懂怎麼部署，大家都只能等著那個關鍵人物回來處理。
 
 為了解決這個問題，我們希望將部署的流程自動化，並且讓PM也有辦法自行決定部署與測試。
 
@@ -16,7 +16,7 @@ title: 使用Fastlane快速部署
 
 （更多詳見： [Fastlane Actions](https://github.com/fastlane/fastlane/blob/master/docs/Actions.md)）
 
-舉例來說，以前iCHEF有一個新版本要發佈到App store上時，我們的做法是先打開XCode，按下Archieve，然後選擇要上傳的封裝檔，選擇Submit to App store，選擇team ID等等等；而當我們安裝Fastlane並且撰寫好部署的Script，往後當需要發佈時只需要在command line輸入以下指令：<br>
+舉例來說，以前iCHEF有一個新版本要發佈到App store上時，我們的做法是先打開XCode，按下Archive，然後選擇要上傳的封裝檔，選擇Submit to App store，選擇team ID等等等；而當我們安裝Fastlane並且撰寫好部署的Script，往後當需要發佈時只需要在command line輸入以下指令：<br>
 
 	$ fastlane appstore
 
@@ -118,7 +118,7 @@ end
 
 當你在`before_all`內呼叫了`cocoapods`，其實代表的是你在所有動作前執行了`pod install`這件事。Fastlane支援許多流行的第三方插件（比如CocoaPods、XCTool、Appium、TestFlight、Slack等等），並且將它們封裝成方便使用的格式。
 ### lane :LANE_NAME
-在lane這個block內的指令就是我們要fastlane幫我們做的事情。我可以撰寫多個lane script，讓test、archieve、deploy執行不同的任務。以上面的程式碼為例，我寫了`lane :test`和`lane :build_RC`兩段lane script，它們負責：
+在lane這個block內的指令就是我們要fastlane幫我們做的事情。我可以撰寫多個lane script，讓test、archive、deploy執行不同的任務。以上面的程式碼為例，我寫了`lane :test`和`lane :build_RC`兩段lane script，它們負責：
 
 * `lane :test`：幫我處理測試流程，並且在測試後輸出測試結果。
 * `lane :build_RC`：幫我處理in-house distribution的流程，最後將包好的ipa輸出至指定的資料夾。
