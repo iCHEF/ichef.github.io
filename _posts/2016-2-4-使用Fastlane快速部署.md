@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 使用Fastlane快速部署
-category: [iOS][CI][fastlane]
+author: barry
 ---
 在一般的產品開發週期中，當我們準備部署新版本時，會由iOS工程師包一個測試版本，交由QA部門進行測試與bug回報及修正。在App測試完成後，再由工程師上傳至App Store並讓PM決定何時部署。
 
