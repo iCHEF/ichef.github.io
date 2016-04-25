@@ -4,11 +4,13 @@
 在做雲端服務的時候，有一個非常重要的環節，那就是 logging system！！  
 因為沒有 logging system 來幫你蒐集 log 並讓你容易 search 的話，先不論發生 bug 的時候不知道要從哪邊開始找起，就連伺服器掛掉狂噴 error 的時候，有可能客戶都會比你早發現，到時候就...  
 在威脅完大家 logging system 的重要性之後，這系列文章主要會分成以下三個部分去說明，讓大家對於 ELK 這套 logging system 有大致上的了解，並且可以架設出 ELK:
+  
 1. ***什麼是 ELK ？***
 2. 用 EC2 架設 Logstash，並搭配 AWS 提供的 Elasticsearch 與 Kibana 來架構 ELK
-3. 將 Nginx 的 Log 藉由 Logstash 送往 AWS Elasticsearch，並用 Kibana 來監測 HTTP Status
+3. 將 Nginx 的 Log 藉由 Logstash 送往 AWS Elasticsearch，並用 Kibana 來監測 HTTP Status  
 
-## 1. 什麼是 ELK ?
+而本篇文章將針對 ***什麼是 ELK ？*** 來開始講起  
+
 ELK 分別是下面這三種東西
 - E: Elasticsearch
 - L: Logstash
@@ -16,11 +18,15 @@ ELK 分別是下面這三種東西
 
 首先我們會先從 Elasticsearch 說明起
 
-#### Elasticsearch
+## Elasticsearch
 Elasticsearch(以下簡稱 ES)是一個建基於 Apache Lecene 的開源軟體([ES Github])，它的 github 上第一句就寫著 ***Elasticsearch is a distributed RESTful search engine***，所以大家應該能腦補出它是什麼東西了吧～  
 我們先把重點放在 search engine 上，Elasticsearch 可以把它想像成是一個會自動幫你做全文 index 讓你可以輕鬆做全文搜尋的資料庫，而它跟一般的 SQL 資料庫在結構上的比對如下  
-SQL: Database -> Table -> Row  
-ES:  Index    -> Type  -> Document  
+
+SQL Terms | ES Terms
+--------- | --------
+Database  | Index
+Table     | Type
+Document  | Row
 你要放到 ES 的資料就叫做 document，它可以是非結構化的一篇文章，這樣還是可以用關鍵字來搜尋到你想要的東西，不過使用在 logging system 上的話你還是會想要放像是 JSON 這種結構化的資料，這樣不僅閱讀更容易，在搜尋的時候也可以用 ES 提供的一些方法，來讓我們使用像是 NOSQL 的搜尋方式來查 document，例如去查 JSON 裡的 count 這個欄位要大於5的資料，這種方式可以更方便我們找到想要的 log，而 ES 也提供了一種很棒棒的 search 語法，叫做 [DSL]，不只可以 filter，更可以做到 aggregations 呢！  
 談完這麼強大的 search engine，我知道各位一定很想趕快知道怎麼塞資料進去，跟在哪裡做搜尋呢？這個時候我們就要來談 RESTful 了！ES 不只搜尋功能強大，更是好棒棒的直接提供你 REST API 來做寫入 data 跟 search data 的功能啊，如果你想要 insert data 到某個 index 的某個 type 裡只要像下面這樣
 ```
@@ -29,7 +35,7 @@ curl -XPOST 'localhost:9200/<index: restaurant>/<type: customer>/' -d '
   "name": "John"
 }'
 ```
-這樣就會在 restaurant 的 index 下的 customer type 裡新增一筆資料 <span style="background-color: rgba(100, 100, 100, 0.3)">{ "name": "John" }</span> ，而 ES 會自動提供這個 document 一個 unique ID，並在 response 的時候回傳包含 ID 在內的相關資訊，之後可以用 put 跟這個 ID 去更新該筆 document
+這樣就會在 restaurant 的 index 下的 customer type 裡新增一筆資料  ` { "name": "John" } ` ，而 ES 會自動提供這個 document 一個 unique ID，並在 response 的時候回傳包含 ID 在內的相關資訊，之後可以用 put 跟這個 ID 去更新該筆 document
 ```
 curl -XPUT 'localhost:9200/<index: restaurant>/<type: customer>/<ID>' -d '
 {
@@ -55,7 +61,7 @@ curl -XPOST 'localhost:9200/<index: restaurant>/_search' -d '
 這樣就會回傳 restaurant 這個 index 下所有符合 name 是 John 的 document，而詳細的 DSL 用法可以參考 [DSL Document]  
 Elasticsearch 的介紹大概到這邊，想暸解更多可以直接到 [Elastic 的官網上看 Document]  
 
-#### Kibana
+## Kibana
 Kibana 簡單來說就是讓你更容易讀取 ES 資料的圖像化工具，將複雜的 DSL 包裝成可以直接用介面選擇的方式就完成 query 同時用 query 的結果畫出圖表呈現給別人看，可以說是沒有 Kibana 的話，ES 就像是失去雙手一樣不方便，不過當然你可以選擇自己做或用坊間的 Library 去對 ES 做讀取，其實不同語言都有一些 implement 甚至有語言有做 stream 的功能，這方面就讓大家自行摸索了，這邊主要介紹 Kibana 的結構，主要分成三層，分別是：discover, visualize, dashboard  
 - discover  
 discover 其實就是 search 的語法，例如 name = John(當然也可以使用複雜的 DSL Filter)，而 discover 就是負責把這些語法存起來，每次使用不同的 discover，在 discover 的頁面上就會有不同的 raw document 顯示在上面，而這些存起來的 discover 也是丟給 visualize 用的東西
@@ -66,7 +72,7 @@ visualize 主要的功能就是依據 discover filter 出來的資料來畫出�
 
 以上大概就是 Kibana 的大致介紹，有興趣的人一樣可以到 [Elastic 的 Kibana 網頁上觀看 Document]  
 
-#### Logstash
+## Logstash
 既然介紹了怎麼用 Kibana 從 ES 裡讀取資料，那總是要想個辦法把資料丟到 ES 裡啊！當然我們可以直接使用 ES 提供的 REST API 去 POST Data，不過往往我們的 Log 其實都是非結構化的資料，直接丟進去的話即使用 Kibana 也畫不出什麼東西，所以勢必要有一個服務可以幫我們做 formatter 的工作，同時當我們的 Log 來源有好多個，要送去的 ES 也不同，甚至是有其它儲存 log 的地方的時候，統一由一個服務來做蒐集、format、發送的工作，會更容易管理，而這就是 Logstash 的場子了！  
 Logstash 基本上就像上面說的，負責蒐集之後做一些處理，接著把資料送到我們想要的地方，而 Logstash 的設定方式也很單純，就是安裝好之後給它一個 .conf 檔之後 start 就可以了，.conf 檔的結構分成三個部分: input、filter、output，而資料處理的流程則是 inputs → filters → outputs  
 
@@ -79,7 +85,7 @@ input {
     path => "/tmp/access_log"
   }
   http {
-  	port => "8000"
+    port => "8000"
   }
 }
 ```
@@ -91,7 +97,7 @@ input {
 ```
 127.0.0.1 - - [11/Dec/2013:00:01:45 -0800] "GET /xampp/status.php HTTP/1.1" 200 3891 "http://cadenza/xampp/navi.php" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:25.0) Gecko/20100101 Firefox/25.0"
 ```
-我們需要把它整理成一份 JSON 的格式的 document，像是 {"http_method":"GET"}，這樣子才比較容易做搜尋，而 Logstash 也提供的 filter 的 plugin叫過 grok，grok 可以自動幫你把 Apache 格式的 raw data 轉成結構化的資料格式
+我們需要把它整理成一份 JSON 的格式的 document，像是  ` {"http_method":"GET"} ` ，這樣子才比較容易做搜尋，而 Logstash 也提供的 filter 的 plugin叫過 grok，grok 可以自動幫你把 Apache 格式的 raw data 轉成結構化的資料格式
 ```
 filter {
   grok {
