@@ -119,7 +119,7 @@ output {
 ## 後話
 其實對 cluster 的概念掌握得好的話，會建議 ES 可以自己架設，雖然 AWS 提供了很方便的服務讓你按一按就架起服務了，可是其實 AWS 的 ES service 算是半殘版本，ES 本身提供了多種自我管理的 API，只要在 ES 的 domain後面加上 `/_<API Name>`，就可以使用了，像是可以看到 ES 狀態的 API，只要訪問 `https://<ES domain>/_status/` 就可以看到了，而 AWS 提供的是的 API 都列在這篇 [AWS ES Operations]裡了，不過可以看到的是並不像 ES 官方所提供的那麼完整  
 另外最可惜的一件事是 ***plugin！*** 使用 ES 的 plugin 也很簡單，就是在 ES domain 後面加上 `/_plugin/<plugin name>/`，可以看到上面的 kibana 的網址就是 `https://<ES domain>/_plugin/kibana/`，而 AWS 只提供了一些 ES 內建的 plugin，但是這世界上有好多善心人士開發了許多的 ES plugin，像是幫 ES 加上 websocket 的功能，這樣就可以容易的 stream 出資料，做到像 [papertrial] 一樣的事情了！不過 AWS 的 ES service 並不提供自行安裝 plugin 的功能，所以這世界上的 plugin 都跟你無關了...  
-這大概就是方便使用的代價吧
+這大概就是方便使用的代價吧，看看[這些精美的 ES plugin]
 
 
 
@@ -138,3 +138,4 @@ output {
 [Logstash 的 config 設定]: <https://www.elastic.co/guide/en/logstash/current/configuration.html>
 [AWS ES Operations]: <http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-gsg-supported-operations.html>
 [papertrial]: <https://papertrailapp.com/>
+[這些精美的 ES plugin]: <https://www.elastic.co/guide/en/elasticsearch/plugins/2.3/intro.html>
