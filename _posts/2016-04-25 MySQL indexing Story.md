@@ -1,4 +1,3 @@
-(暫時紀錄一下，還有些 python-mysql 的情形也可以分享)
 # Story
 
 我們都知道 MySQL 的 index 很重要，會影響 query 的速度，設定 index 的時候，通常直覺會直接對 columns(fields) 直接下index。
